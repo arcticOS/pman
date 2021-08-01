@@ -12,6 +12,7 @@ Installation on *nix OSes does not require root permissions.
 1. Download and extract `pman` to a directory with write permissions.
 2. Add the directory containing `pman`, as well as the `packages` subdirectory, to your PATH.
 3. Create a new environment variable called `PMAN_PACKAGES` containing the path to the `packages` subdirectory.
+4. (Optional) Rename `pman.py` to `pman`
 
 ## Installation (Windows)
 Installation on Windows requires administrator permissions.

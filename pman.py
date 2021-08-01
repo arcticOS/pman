@@ -49,12 +49,19 @@ def download_file_to_cache(url): # Downloads a file to packages/cache.zip
 
 # Init argparse
 import argparse
+global args
 
 parser = argparse.ArgumentParser(description='Install and manage packages.')
 parser.add_argument('operation', metavar='operation', type=str, nargs=1, help='refresh, install, or uninstall. install will update by default')
 parser.add_argument('packages', nargs='*', type=str, help="Packages to install or uninstall.")
 parser.add_argument('--version', help='Print pman version.', action="store_true")
+parser.add_argument('--verbose', help='Print pman version.', action="store_true")
 args = parser.parse_args()
+
+def verbose_print(message):
+    global args
+    if(args.verbose):
+        print(message)
 
 # App info & GPL3 text.
 if(args.version):
@@ -68,11 +75,13 @@ print("under certain conditions; see LICENSE for details.)")
 
 # Init packages folder
 if not(os.path.exists("packages")):
+    verbose_print("Creating packages folder...")
     os.mkdir("packages")
 
 # Init repos
 global repos
 if(os.path.exists("repos.json")):
+    verbose_print("Loading repos.json...")
     with open("repos.json") as repo_file:
         repos = json.load(repo_file)
 else:
@@ -89,6 +98,7 @@ if(repos == []):
 # Init package list
 global packagelist
 if(os.path.exists("package-list.json")):
+    verbose_print("Loading package-list.json")
     with open("package-list.json") as packagelist_file:
         packagelist = json.load(packagelist_file)
 else:
@@ -96,6 +106,12 @@ else:
     with open("package-list.json", "w") as packagelist_file:
         packagelist_file.write("{\"installed\":[],\"sources\":{}}")
     packagelist = {"installed": {}, "sources": {}}
+
+def write_package_list():
+    global packagelist
+    verbose_print("Writing package list to disk...")
+    with open("package-list.json", "w") as outfile:
+        json.dump(packagelist, outfile)
 
 # This will probably need to be used by multiple operations so I'm defining it here
 def refresh_sources():
@@ -110,12 +126,12 @@ def refresh_sources():
             # Download packages.json from repo.
             filedata = urllib.request.urlopen(repo + "/packages.json") 
             data = filedata.read()
+            verbose_print("Downloaded package list, parsing...")
             packagelist["sources"][repo] = json.loads(data)
             print("Found " + str(len(packagelist["sources"][repo])) + " package(s).")
         except: # Failure here isn't fatal, some repos could be down at some points.
             print("ERROR: Failed to get package list from " + repo + ".")
-    with open("package-list.json", "w") as outfile:
-        json.dump(packagelist, outfile)
+    write_package_list()
 
 # Recursively loop through package and its dependencies.
 def get_package_and_depends(package):
@@ -157,6 +173,7 @@ if(args.operation[0] == "install"):
             packages_to_install.update(get_package_and_depends(package))
     else: # Update installed packages
         for package in packagelist.installed:
+            print("Updating all packages...")
             packages_to_install.update(get_package_and_depends(package))
 
     # Download and install all packages
@@ -172,17 +189,18 @@ if(args.operation[0] == "install"):
         filelist = [] # Used to temporarily store file paths - we need these for uninstalling.
         try:
             # Download and extract files needed
+            verbose_print("Downloading package zip file...")
             download_file_to_cache(packages_to_install[package]["path"])
+            verbose_print("Extracting package zip file...")
             cache_zip = zipfile.ZipFile("packages/cache.zip")
             cache_zip.extractall("packages")
             filelist = cache_zip.namelist()
-
+            verbose_print("Removing cache zip file...")
             os.remove("packages/cache.zip")
         except:
             print("Error installing " + package + ".")
             # We've already probably installed some things, dump package list to disk.
-            with open("package-list.json", "w") as outfile:
-                json.dump(packagelist, outfile)
+            write_package_list()
             sys.exit(-1)
 
         # Add package to installed list
@@ -190,9 +208,7 @@ if(args.operation[0] == "install"):
         packagelist["installed"][package]["files"] = filelist
 
     # Dump package list so we know what's installed.
-    print("Saving installed packages to disk...")
-    with open("package-list.json", "w") as outfile:
-        json.dump(packagelist, outfile)
+    write_package_list()
 
 elif(args.operation[0] == "uninstall"):
     # Loop over all requested packages
@@ -203,6 +219,7 @@ elif(args.operation[0] == "uninstall"):
                 # Delete all package files
                 for filename in packagelist["installed"][package]["files"]:
                     realpath = "packages/" + filename
+                    verbose_print("Deleting " + realpath + "...")
                     recursive_delete(realpath)
                 # Remove package from package list
                 packagelist["installed"].pop(package)
@@ -210,16 +227,14 @@ elif(args.operation[0] == "uninstall"):
             except:
                 print("Error uninstalling " + package + "...")
                 # We've already probably uninstalled some things, dump package list to disk.
-                with open("package-list.json", "w") as outfile:
-                    json.dump(packagelist, outfile)
+                write_package_list()
                 sys.exit(-1)
 
         else: # Just a warning message, this shouldn't be considered fatal.
             print(package + " not installed.")
         
     # Dump package list to disk
-    with open("package-list.json", "w") as outfile:
-        json.dump(packagelist, outfile)
+    write_package_list()
 
 elif(args.operation[0] == "refresh"):
     # Just call refresh_sources()
