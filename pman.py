@@ -32,8 +32,8 @@ def is_url_secure(url):
         return False
     return True
 
-def download_file_to_cache(url):
-    if(is_url_secure(url)):
+def download_file_to_cache(url): # Downloads a file to packages/cache.zip
+    if(is_url_secure(url)): # Make sure we're either downloading from this machine or from a secure connection.
         filedata = urllib.request.urlopen(url)
         data = filedata.read()
         with open("packages/cache.zip", "wb") as outfile:
@@ -56,6 +56,7 @@ parser.add_argument('packages', nargs='*', type=str, help="Packages to install o
 parser.add_argument('--version', help='Print pman version.', action="store_true")
 args = parser.parse_args()
 
+# App info & GPL3 text.
 if(args.version):
     print(VERSION_STRING + " - Copyright (C) 2021 Johnny Stene")
 else:
@@ -102,17 +103,21 @@ def refresh_sources():
     for repo in repos:
         print("Downloading package list from " + repo + "...")
         try:
+            # Make sure we don't have a weird URL format in the repos.json file.
             if(repo.endswith("/")):
                 repo = repo[:-1]
-            filedata = urllib.request.urlopen(repo + "/packages.json")
+            
+            # Download packages.json from repo.
+            filedata = urllib.request.urlopen(repo + "/packages.json") 
             data = filedata.read()
             packagelist["sources"][repo] = json.loads(data)
             print("Found " + str(len(packagelist["sources"][repo])) + " package(s).")
-        except:
+        except: # Failure here isn't fatal, some repos could be down at some points.
             print("ERROR: Failed to get package list from " + repo + ".")
     with open("package-list.json", "w") as outfile:
         json.dump(packagelist, outfile)
 
+# Recursively loop through package and its dependencies.
 def get_package_and_depends(package):
     packages = {}
     found = None
@@ -130,6 +135,7 @@ def get_package_and_depends(package):
         sys.exit(-1)
     return packages
 
+# Recursively delete a file or directory.
 def recursive_delete(path):
     if(os.path.exists(path)):
         if(os.path.isdir(path)):
@@ -146,14 +152,16 @@ if(packagelist["sources"] == {}):
 # Do whatever user wanted
 if(args.operation[0] == "install"):
     packages_to_install = {}
-    if(len(args.packages) > 0):
+    if(len(args.packages) > 0): # Install certain packages
         for package in args.packages:
             packages_to_install.update(get_package_and_depends(package))
-    else: # Update
+    else: # Update installed packages
         for package in packagelist.installed:
             packages_to_install.update(get_package_and_depends(package))
+
+    # Download and install all packages
     for package in packages_to_install:
-        if(package in packagelist["installed"]):
+        if(package in packagelist["installed"]): # Make sure we don't update without needing to
             if(packagelist["installed"][package]["version"] == packages_to_install[package]["version"]):
                 print("Not updating " + package + ".")
                 continue
@@ -161,12 +169,14 @@ if(args.operation[0] == "install"):
         else:
             print("Installing " + package + "...")
 
-        filelist = []
+        filelist = [] # Used to temporarily store file paths - we need these for uninstalling.
         try:
+            # Download and extract files needed
             download_file_to_cache(packages_to_install[package]["path"])
             cache_zip = zipfile.ZipFile("packages/cache.zip")
             cache_zip.extractall("packages")
             filelist = cache_zip.namelist()
+
             os.remove("packages/cache.zip")
         except:
             print("Error installing " + package + ".")
@@ -174,19 +184,27 @@ if(args.operation[0] == "install"):
             with open("package-list.json", "w") as outfile:
                 json.dump(packagelist, outfile)
             sys.exit(-1)
+
+        # Add package to installed list
         packagelist["installed"][package] = packages_to_install[package]
         packagelist["installed"][package]["files"] = filelist
+
+    # Dump package list so we know what's installed.
     print("Saving installed packages to disk...")
     with open("package-list.json", "w") as outfile:
         json.dump(packagelist, outfile)
+
 elif(args.operation[0] == "uninstall"):
+    # Loop over all requested packages
     for package in args.packages:
-        if(package in packagelist["installed"]):
+        if(package in packagelist["installed"]): # Make sure it's actually installed
             print("Uninstalling " + package + "...")
             try:
+                # Delete all package files
                 for filename in packagelist["installed"][package]["files"]:
                     realpath = "packages/" + filename
                     recursive_delete(realpath)
+                # Remove package from package list
                 packagelist["installed"].pop(package)
                 print("Uninstalled " + package + ".")
             except:
@@ -195,12 +213,17 @@ elif(args.operation[0] == "uninstall"):
                 with open("package-list.json", "w") as outfile:
                     json.dump(packagelist, outfile)
                 sys.exit(-1)
-        else:
+
+        else: # Just a warning message, this shouldn't be considered fatal.
             print(package + " not installed.")
+        
+    # Dump package list to disk
     with open("package-list.json", "w") as outfile:
         json.dump(packagelist, outfile)
+
 elif(args.operation[0] == "refresh"):
+    # Just call refresh_sources()
     refresh_sources()
-else:
+else: # Invalid command
     print("Invalid operation. See \"pman -h\" for more info.")
     sys.exit(-1)

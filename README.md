@@ -33,6 +33,7 @@ Installation on Windows requires administrator permissions.
 
 ## Planned features
 - Add repos from command line
+- Only install packages meant for a certain OS/CPU architecture
 - Option to update and then run packages (intended to update GUI of an embedded device before it finishes booting)
 
 ## Design Goals 
