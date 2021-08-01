@@ -19,7 +19,7 @@ Installation on Windows requires administrator permissions.
 3. Run the command `Test-Path $Profile` in PowerShell.
 4. (if command returned `False`) Run the command `New-Item –Path $Profile –Type File –Force` in PowerShell.
 5. Run the command `notepad $Profile` in PowerShell.
-6. In the Notepad window that opens, add the command `Set-Alias -Name `pman` -Value python3 <`pman`-path>\`pman`.py` to the end, replacing `<`pman`-path>` with the path to your `pman` installation.
+6. In the Notepad window that opens, add the command `Set-Alias -Name pman -Value python3 <pman-path>\pman.py` to the end, replacing `<pman-path>` with the path to your `pman` installation.
 7. Add the `packages` subdirectory to your PATH.
 8. Restart PowerShell.
 
