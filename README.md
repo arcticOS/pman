@@ -1,6 +1,9 @@
 # pman
 `pman` is a small, portable, cross-platform package manager written in Python.
 
+## Note
+`pman` is not ready for use yet (currently in pre-alpha, core features are not implemented yet)
+
 ## Why another package manager?
 As far as I know, there are no truly "cross-platform" package managers. `apt`, `pacman`, `zypper`, and the like only work well on Linux (although `apt` is also used in iOS jailbreaking) and `brew` only works on *nix OSes. `pman` is not only cross-platform, but it's also portable - you can move your installation (including repos and installed packages) across two machines very easily, and it will just work. Any packages that are cross-platform (for example, packages written in Python or Java) will even work across operating systems.
 
@@ -19,6 +22,15 @@ Installation on Windows requires administrator permissions.
 6. In the Notepad window that opens, add the command `Set-Alias -Name `pman` -Value python3 <`pman`-path>\`pman`.py` to the end, replacing `<`pman`-path>` with the path to your `pman` installation.
 7. Add the `packages` subdirectory to your PATH.
 8. Restart PowerShell.
+
+## Features
+- Load repositories and package lists from disk.
+
+## Planned features
+- Download and import package lists from servers.
+- Download and update packages from servers
+- Uninstall installed packages
+- Option to update and then run packages (intended to update GUI of an embedded device before it finishes booting)
 
 ## Design Goals 
 - Allow the same script to run on all supported OSes (Windows, GNU/Linux, etc...)
