@@ -1,20 +1,24 @@
 # pman
-pman is a small cross-platform package manager written in Python.
+`pman` is a small, portable, cross-platform package manager written in Python.
+
+## Why another package manager?
+As far as I know, there are no truly "cross-platform" package managers. `apt`, `pacman`, `zypper`, and the like only work well on Linux (although `apt` is also used in iOS jailbreaking) and `brew` only works on *nix OSes. `pman` is not only cross-platform, but it's also portable - you can move your installation (including repos and installed packages) across two machines very easily, and it will just work. Any packages that are cross-platform (for example, packages written in Python or Java) will even work across operating systems.
 
 ## Installation (*nix)
 Installation on *nix OSes does not require root permissions.
-1. Download and extract pman to a directory with write permissions.
-2. Add the directory containing pman, as well as the `packages` subdirectory, to your PATH.
+1. Download and extract `pman` to a directory with write permissions.
+2. Add the directory containing `pman`, as well as the `packages` subdirectory, to your PATH.
 
 ## Installation (Windows)
 Installation on Windows requires administrator permissions.
-1. Download and extract pman to a directory with write permissions.
+1. Download and extract `pman` to a directory with write permissions.
 2. Run the command `Set-ExecutionPolicy RemoteSigned -Scope LocalMachine` in PowerShell as administrator.
 3. Run the command `Test-Path $Profile` in PowerShell.
 4. (if command returned `False`) Run the command `New-Item –Path $Profile –Type File –Force` in PowerShell.
 5. Run the command `notepad $Profile` in PowerShell.
-6. In the Notepad window that opens, add the command `Set-Alias -Name pman -Value python3 <pman-path>\pman.py` to the end, replacing `<pman-path>` with the path to your pman installation.
-7. Restart PowerShell.
+6. In the Notepad window that opens, add the command `Set-Alias -Name `pman` -Value python3 <`pman`-path>\`pman`.py` to the end, replacing `<`pman`-path>` with the path to your `pman` installation.
+7. Add the `packages` subdirectory to your PATH.
+8. Restart PowerShell.
 
 ## Design Goals 
 - Allow the same script to run on all supported OSes (Windows, GNU/Linux, etc...)
@@ -23,5 +27,7 @@ Installation on Windows requires administrator permissions.
 - Only use libraries already in the Python standard library
 
 ## Security Design
-pman relies on HTTPS to ensure traffic is not tampered with. Routing traffic through HTTP only is not supported.
-Ideally pman will use GPG signatures before v1.
+`pman` relies on HTTPS to ensure traffic is not tampered with. Routing traffic through HTTP only is not supported.
+
+## Security Goals
+Also have `pman` verify GPG signatures on files to help prevent server-side tampering. Ideally public keys should be downloaded once, when we first see the repo in `repos.json`
