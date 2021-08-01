@@ -11,6 +11,7 @@ As far as I know, there are no truly "cross-platform" package managers. `apt`, `
 Installation on *nix OSes does not require root permissions.
 1. Download and extract `pman` to a directory with write permissions.
 2. Add the directory containing `pman`, as well as the `packages` subdirectory, to your PATH.
+3. Create a new environment variable called `PMAN_PACKAGES` containing the path to the `packages` subdirectory.
 
 ## Installation (Windows)
 Installation on Windows requires administrator permissions.
@@ -21,7 +22,8 @@ Installation on Windows requires administrator permissions.
 5. Run the command `notepad $Profile` in PowerShell.
 6. In the Notepad window that opens, add the command `Set-Alias -Name pman -Value python3 <pman-path>\pman.py` to the end, replacing `<pman-path>` with the path to your `pman` installation.
 7. Add the `packages` subdirectory to your PATH.
-8. Restart PowerShell.
+8. Create a new environment variable called `PMAN_PACKAGES` containing the path to the `packages` subdirectory.
+9. Restart PowerShell.
 
 ## Features
 - Load repositories and package lists from disk.

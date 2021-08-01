@@ -18,31 +18,4 @@ The package index is a simple JSON file, located at `<repo-directory>/packages.j
 ```
 
 ## package files
-Package files are stored in .zip files. Packages must either have a wrapper (a simple shell/batch file will do) that changes into a directory with the package name or support loading needed files from a dedicated subdirectory. The .zip layout is as follows:
-
-Dedicated subdirectory:
-```
-package.zip
-    |
-    |-package <- Data directory
-    |   |-some-required-file.txt
-    |   \-some-other-required-file.jpg
-    \-package.exe <- Executable
-```
-
-Wrapper:
-```
-package.zip
-    |
-    |-package <- Data directory
-    |   |-some-required-file.txt
-    |   |-some-other-required-file.jpg
-    |   \-package.exe <- Executable
-    \-package.bat <- Wrapper
-```
-`package.bat` in this case would look something like:
-```sh
-@echo off
-cd package
-package.exe
-```
+Package files are stored in .zip files. Packages must have the executable file in the root of the packages folder, and must be able to find their own files in the directory pointed to by `PMAN_PACKAGES`. 
